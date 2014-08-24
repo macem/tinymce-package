@@ -1,0 +1,234 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <link rel="stylesheet" type="text/css" href="css/main.css" media="screen"/>
+  <script type="text/javascript" src="js/main.js"></script>
+</head>
+<body>
+
+  <div class="mce-container-body mce-abs-layout">
+    <label class="mce-widget mce-label mce-first mce-abs-layout-item">MapName</label>
+    <input id="imgmap_name" class="mce-textbox mce-placeholder" type="text"/>
+  </div>
+  <div class="mce-container-body mce-abs-layout">
+    Create area
+    <a href class="mce-imgmap-rect mce-active mce-btn">rectangle</a>,
+    <a href class="mce-imgmap-circle mce-btn">circle</a>,
+    <a href class="mce-imgmap-polygon mce-btn">polygon</a> => use key CTRL and mouse to add or delete point
+  </div>
+
+  <div class="container">
+    <div class="mce-item" title="move area">
+      <a class="mce-resize resize-1" index="1" title="resize area"></a>
+      <a class="mce-resize resize-2" index="2" title="resize area"></a>
+      <a class="mce-resize resize-3" index="3" title="resize area"></a>
+      <a class="mce-resize resize-4" index="4" title="resize area"></a>
+      <div class="mce-link">
+        <a href class="mce-link-edit" title="edit area">Edit</a><a href class="mce-link-delete" title="remove area">[X]</a>
+      </div>
+    </div>
+  </div>
+
+  <div class="mce-modal-edit mce-hide">
+    <h3>Add or edit area</h3>
+    <div>
+      <label>Url</label><input type="text" id="modal-href"/>
+    </div>
+    <div>
+      <label>Title</label><input type="text" id="modal-title"/>
+    </div>
+    <div>
+      <label>Target</label><select id="modal-target">
+      <option value="">Same window</option>
+      <option value="_blank">New window</option>
+      </select>
+    </div>
+    <hr>
+    <button id="mce-modal-ok">OK</button><button id="mce-modal-cancel">cancel</button>
+  </div>
+
+  <script type="text/javascript">
+  var tinymce = top.tinymce,
+    editor = top.tinymce.activeEditor,
+    args = editor.windowManager.getParams(),
+    body = editor.getBody() || editor.bodyElement,
+    image = editor.selection.getNode(),
+    //$ = top.$,
+    $$ = tinymce.dom.DomQuery,
+    options = {
+      type: 'rect',
+      key: null
+    },
+    $container = $$('.container', document.body),
+    $area = $container.find('.mce-item'),
+    htmlArea = $area[0].outerHTML;
+
+  function insertMap() {
+    save(image);
+    editor.undoManager.add();
+    editor.nodeChanged();
+    editor.windowManager.close();
+    return false;
+  }
+
+  editor.addCommand('mceImageMapInsert', insertMap);
+
+  // init
+  load(image);
+
+  $area.remove();
+
+  $container
+  .append($$('<img/>').attr({
+    src: args.src,
+    width: args.width,
+    height: args.height
+  }));
+
+  $$(document.body).on('click', function(e) {
+    var $this = $$(e.target), $current;
+
+    if (($current = $this.closest('.mce-imgmap-rect')).length) {
+      $current.parent().find('.mce-active').removeClass('mce-active');
+      $current.toggleClass('mce-active');
+      options.type = options.type === 'rect' ? null : 'rect';
+      return false;
+    }
+    else if (($current = $this.closest('.mce-imgmap-circle')).length) {
+      $current.parent().find('.mce-active').removeClass('mce-active');
+      $current.toggleClass('mce-active');
+      options.type = options.type === 'circle' ? null : 'circle';
+      return false;
+    }
+    else if (($current = $this.closest('.mce-imgmap-polygon')).length) {
+      $current.parent().find('.mce-active').removeClass('mce-active');
+      $current.toggleClass('mce-active');
+      options.type = options.type === 'polygon' ? null : 'polygon';
+      return false;
+    }
+    else if (($current = $this.closest('.mce-link-edit')).length) {
+      editArea($current.parent().parent()[0]);
+      return false;
+    }
+    else if (($current = $this.closest('.mce-link-delete')).length) {
+      $$($current.parent().parent()[0]).remove();
+      return false;
+    }
+    /*else if ($this.closest('.mce-ok').length) {
+      save(image);
+      editor.undoManager.add();
+      editor.nodeChanged();
+      editor.windowManager.close();
+      return false;
+    }
+    else if ($this.closest('.mce-cancel').length) {
+      editor.windowManager.close();
+      return false;
+    }*/
+  });
+
+  $container.on('mousedown', function(e) {
+    var $self = $$(this), $this = $$(e.target);
+
+    if ($this.parent().hasClass('mce-rect') || $this.parent().hasClass('mce-circle')) {
+      // resize we
+      if ($this.hasClass('resize-2') || $this.hasClass('resize-4')) {
+        return resizeWE($self, $this, e.clientX);
+      }
+      // resize ns
+      if ($this.hasClass('resize-1') || $this.hasClass('resize-3')) {
+        return resizeNS($self, $this, e.clientY);
+      }
+    }
+
+    if ($this.parent().hasClass('mce-polygon')) {
+      var coords, index, dimensions, $item, i, len, $canvas,
+        $parent = $this.parent();
+
+      // remove point
+      if ($this.hasClass('mce-resize') && e.ctrlKey === true) {
+        coords = $parent.get(0).coords;
+        index = parseInt($this.attr('index')) - 1;
+        $canvas = $parent.find('canvas');
+        coords.splice(index*2, 2);
+        $parent.find('.mce-resize').remove();
+        len = coords.length/2;
+
+        for (i=0; i < len; ++i) {
+          addPoint($parent, i+1, coords);
+        }
+        dimensions = dimensionsPoly(coords);
+        renderPoly($canvas, coords, dimensions);
+      }
+      // move point
+      else if ($this.hasClass('mce-resize')) {
+        return move($self, $this, e, function($_target, pos, org) {
+          coords = $_target.parent()[0].coords;
+          index = parseInt($_target.attr('index')) - 1;
+          $canvas = $_target.parent().find('canvas');
+          coords[(index * 2) + 1] = pos.top;
+          coords[index * 2] = pos.left;
+          dimensions = dimensionsPoly(coords);
+          renderPoly($canvas, coords, dimensions);
+        });
+      }
+      // add point
+      else if ($this.is('canvas') && e.ctrlKey === true) {
+        coords = $parent[0].coords;
+        index = (coords.length/2);
+        coords.push(e.clientY - $self[0].offsetTop);
+        coords.push(e.clientX - $self[0].offsetLeft);
+        $item = addPoint($parent, index+1, coords);
+        dimensions = dimensionsPoly(coords);
+        renderPoly($this, coords, dimensions);
+      }
+      // move canvas
+      else if ($this.is('canvas')) {
+        return move($self, $this, e, function($_target, pos, org) {
+          $parent.find('.mce-link').addClass('mce-hide');
+          coords = $_target.parent()[0].coords;
+          len = coords.length/2;
+
+          for (i = 0; i < len; ++i) {
+            $parent.find('a[index="' + (i + 1) + '"]').css({
+              top: coords[(i * 2) + 1] - (org.top - pos.top),
+              left: coords[i * 2] - (org.left - pos.left)
+            });
+          }
+        },
+        function($_target) {
+          $parent.find('.mce-link').removeClass('mce-hide')
+          coords = $_target.parent()[0].coords;
+          len = coords.length/2;
+
+          for (i = 0; i < len; ++i) {
+            $item = $parent.find('a[index="' + (i + 1) + '"]');
+            coords[(i * 2) + 1] = parseInt($item.css('top'));
+            coords[i * 2] = parseInt($item.css('left'));
+          }
+
+          dimensions = dimensionsPoly(coords);
+          renderPoly($_target.parent().find('canvas'), coords, dimensions);
+        });
+      }
+    }
+
+    // move whole shape
+    if ($this.hasClass('mce-rect') || $this.hasClass('mce-circle')) {
+      return move($self, $this, e);
+    }
+
+    if (e.target.tagName !== 'IMG' || !options.type) {
+      return true;
+    }
+
+    // create default poly
+    if (options.type === 'polygon') {
+      return createPoly($self, $this, options.type, e);
+    }
+    // create rect or circle
+    return create($self, $this, options.type, e);
+  });
+  </script>
+</body>
+</html>

@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <link rel="stylesheet" type="text/css" href="css/codemirror.css" media="screen"/>
+  <script type="text/javascript" src="js/codemirror/lib/codemirror.js"></script>
+  <script type="text/javascript" src="js/codemirror/mode/xml/xml.js"></script>
+  <script type="text/javascript" src="js/codemirror/mode/javascript/javascript.js"></script>
+  <script type="text/javascript" src="js/codemirror/mode/css/css.js"></script>
+  <script type="text/javascript" src="js/codemirror/mode/htmlmixed/htmlmixed.js"></script>
+  <script type="text/javascript" src="js/codemirror/addon/edit/matchbrackets.js"></script>
+</head>
+<body>
+
+  <textarea id="mce-code"></textarea>
+
+  <script type="text/javascript">
+  var tinymce = top.tinymce,
+    editor = top.tinymce.activeEditor,
+    args = editor.windowManager.getParams(),
+    body = editor.getBody() || editor.bodyElement,
+    $$ = tinymce.dom.DomQuery,
+    //$container = $$('<pre class="mce-container-body"/>');*/
+    //$code = $$('<code data-language="html" contenteditable="true"/>');
+
+    $textarea = $$('#mce-code', document.body).html(args.data);
+
+    //$$document.body.html(args.data);//container.appendTo(document.body);
+    var myTextArea = document.getElementById("test");
+
+    CodeMirror.fromTextArea($textarea[0], {
+      lineNumbers: true,
+      lineWrapping: true,
+      indentUnit: 1,
+      tabSize: 1,
+      matchBrackets: true,
+      styleActiveLine: true,
+      mode: "htmlmixed"
+    });
+
+  </script>
+</body>
+</html>

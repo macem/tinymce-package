@@ -1,0 +1,154 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <style type="text/css">
+  .mce-btn {
+    padding: 5px 10px;
+    background: #ddd;
+    margin: 5px;
+    display: inline-block;
+  }
+
+  .container {
+    overflow: hidden;
+  }
+
+  .section.first {
+    float: left;
+    width: 70%;
+    overflow: auto;
+    height: 550px;
+    position: relative;
+  }
+
+  .section.first:empty:before {
+    content: '(empty)';
+    position: absolute;
+    left: 50%;
+    top: 50%;
+    color: #999;
+  }
+
+  .section.last {
+    float: right;
+    width: 30%;
+    overflow: auto;
+    height: 550px;
+  }
+
+  .section.last h4 {
+    margin: 0;
+    background: #ddd;
+    padding: 10px;
+  }
+
+  .section.last small {
+    display: block;
+    padding: 5px 10px;
+  }
+
+  .section.last .date {
+    background: #eee;
+  }
+
+  .section.last .mce-selected *,
+  .section.last .mce-show-version:hover * {
+    color: #fff;
+    background: #06c;
+  }
+  </style>
+</head>
+<body>
+
+  <div class="container">
+    <div class="section first"></div>
+    <div class="section last"></div>
+  </div>
+
+    <script type="text/javascript">
+    var tinymce = top.tinymce,
+      editor = top.tinymce.activeEditor,
+      args = editor.windowManager.getParams(),
+      $$ = tinymce.dom.DomQuery,
+      options = {
+        current: {
+          version: null,
+          content: null
+        },
+        versions: null
+      },
+      $container = $$(document.body).find('.container');
+
+    // copy content to editor
+    function copyContent() {
+      if (!options.current.content) {
+        alert('There is no content, please select correct version');
+        return false;
+      }
+      editor.setContent(options.current.content);
+      editor.undoManager.add();
+      editor.isNotDirty = false;
+      editor.nodeChanged();
+      editor.windowManager.close();
+    }
+
+    editor.addCommand('mceVersionsCopyContent', copyContent);
+
+    // copy styles
+    function copyStyles(from_, to_) {
+      var store = [], style, rule,
+          node = document.createElement('style');
+
+      for (style in from_.styleSheets) {
+        for(rule in from_.styleSheets[style].cssRules) {
+          store.push(from_.styleSheets[style].cssRules[rule].cssText);
+        }
+      }
+
+      node.type = 'text/css';
+      node.innerHTML = store.join('');
+      to_.head.appendChild(node);
+    }
+
+    copyStyles(top.document, document);
+
+    // load versions
+    top.$.easyajax.content.getVersions(top.portalData.nodeid, null, function(json) {
+      options.versions = json.otherVersions;
+      options.versions.shift();
+
+      options.versions.forEach(function(item) {
+        var $link = $$('<a/>');
+
+        $link.attr({
+          'href': '',
+          'class': 'mce-show-version',
+          'data-version': item.version
+        });
+
+        $link.append('<h4>Version: ' + item.version + '<span class="label right success">published</span></h4>')
+        .append('<small class="date">created: ' + item.creationDate + '</small>')
+        .append('<small>modified: ' + item.modificationDate + '</small>')
+        .append('<small>autor: ' + item.author + '</small>');
+        $container.find('.last').prepend($link);
+      });
+    });
+
+    // get current version
+    $container.on('click', function(e) {
+      if ($$(e.target).closest('a.mce-show-version')) {
+        options.current.version = $$(e.target).attr('data-version');
+
+        top.$.easyajax.content.getVersions(top.portalData.nodeid, options.current.version, function(json) {
+          options.current.content = json.content;
+          $container.find('.first').html(options.current.content);
+        });
+        $$(e.target).parent().children().removeClass('mce-selected');
+        $$(e.target).addClass('mce-selected');
+        return false;
+      }
+    });
+
+  </script>
+</body>
+</html>

@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <style>
+  body {
+    font-family: Arial;
+  }
+
+  pre, code {
+    background-color: #eee;
+    border: 1px solid #ccc;
+    font-size: 12px;
+    line-height: 1.6;
+    padding: 5px;
+  }
+
+  .short {
+    min-width: 30%;
+    display: inline-block;
+  }
+
+  sup {
+    color: #aaa;
+  }
+
+  .alert {
+    padding: 0 10px;
+    color: #c08319;
+    line-height: 1.5em;
+    background: #fcf8e8;
+    border: 0 solid #fbeed5;
+  }
+
+  small {
+    color: #444;
+  }
+
+  p {
+    font-size: .75em;
+  }
+  </style>
+</head>
+<body>
+
+  <div class="mce-container-body mce-abs-layout">
+    <h3>TEXT PATTERN<br>
+    <small>are used to change the formatting of words and sentences</small></h3>
+
+    <h5>The default patterns is similar to markdown syntax so you can type:</h5>
+    <p><code class="short">*text*</code> - makes text <em>emphasis</em> <sup>(1)</sup></p>
+    <p><code class="short">**text**</code> - makes text <strong>strong</strong> <sup>(1)</sup></p>
+    <p><code class="short">??text??</code> - makes text in <cite>citation</citeg> <sup>(1)</sup></p>
+    <p><code class="short">--text--</code> - makes text <del>deleted</del> <sup>(1)</sup></p>
+    <p><code class="short"># text</code> - biggest heading 1 <sup>(2)</sup></p>
+    <p><code class="short">## text</code> - bigger heading 2 <sup>(2)</sup></p>
+    <p><code class="short">### text</code> - big heading 3 <sup>(2)</sup></p>
+    <p><code class="short">#### text</code> - normal heading 4 <sup>(2)</sup></p>
+    <p><code class="short">##### text</code> - small heading 5 <sup>(2)</sup></p>
+    <p><code class="short">###### text</code> - smallest heading 6 <sup>(2)</sup></p>
+    <p><code class="short">1. text</code> - makes text in ordered list <sup>(2)</sup></p>
+    <p><code class="short">* text</code> - makes text in unordered list <sup>(2)</sup></p>
+    <p><code class="short">{quote} text</code> - quote a block of text <sup>(2)</sup></p>
+    <p><code class="short">{code} text</code> - makes a preformatted block of code <sup>(2)</sup></p>
+
+    <div class="alert">
+      <p><strong>NOTE:</strong><br>
+      1). inline patterns should work after we type <code>*text*</code> and space,<br>
+      2). block patterns should work after we type <code>#text</code> and enter.
+      </p>
+    </div>
+  </div>
+</body>
+</html>

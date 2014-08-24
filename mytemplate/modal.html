@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <link rel="stylesheet" type="text/css" href="css/main.css" media="screen"/>
+</head>
+<body>
+
+  <div class="container">
+    <ul></ul>
+  </div>
+
+  <script type="text/javascript">
+  var tinymce = top.tinymce,
+    editor = top.tinymce.activeEditor,
+    args = editor.windowManager.getParams(),
+    $$ = tinymce.dom.DomQuery,
+    $container = $$('.container', document.body),
+    node = editor.selection.getNode(),
+    templates = editor.settings.templates;
+
+  // put ajax or html template into editor
+  function selectTemplate($node) {
+    this.content = templates[parseInt($node.attr('data-content'))].content;
+
+    if (!this.content) {
+      tinymce.util.XHR.send({
+        url: $node.attr('href'),
+        success: function(html) {
+          editor.focus();
+          editor.selection.setContent(html);
+        }
+      });
+    }
+    else {
+      editor.focus();
+      editor.selection.setContent(this.content);
+    }
+
+    editor.undoManager.add();
+    editor.nodeChanged();
+    editor.windowManager.close();
+    return false;
+  }
+
+  // render list of templates
+  templates.forEach(function(item, index) {
+    var $node = $$('<li/>'),
+      $link = $$('<a/>').attr({
+          'href': item.url || '#',
+          'data-content': index,
+          'title': "click to insert template",
+          'class': "mce-template-select"
+        });
+      $h3 = $$('<h3/>').text(item.title),
+      $img = $$('<img/>').attr('src', item.image),
+      $small = $$('<small/>').text(item.description);
+
+    $link.append($h3).append($img).append($small);
+    $node.append($link);
+    $container.find('ul').append($node);
+  });
+
+
+  // event
+  $container.on('click', function(e) {
+    var $self = $$(e.target);
+
+    if ($self.closest('a.mce-template-select')) {
+      return selectTemplate($self.closest('a.mce-template-select'));
+    }
+  });
+
+  </script>
+</body>
+</html>

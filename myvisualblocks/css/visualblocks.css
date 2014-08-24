@@ -1,0 +1,194 @@
+/** = grid formats */
+
+.mce-visualblocks h1,
+.mce-visualblocks h2,
+.mce-visualblocks h3,
+.mce-visualblocks h4,
+.mce-visualblocks h5,
+.mce-visualblocks h6,
+.mce-visualblocks p,
+.mce-visualblocks pre,
+.mce-visualblocks address,
+.mce-visualblocks div,
+.mce-visualblocks li,
+.mce-visualblocks table td {
+  outline: dotted 1px #d4d4d4;
+  padding: 5px 0 0 0;
+  margin: 8px 0;
+}
+
+.mce-visualblocks pre:before,
+.mce-visualblocks address:before,
+.mce-visualblocks blockquote:before,
+/*.mce-visualblocks cite:before,
+.mce-visualblocks code:before,
+.mce-visualblocks small:before,*/
+.mce-visualblocks table td:before,
+.mce-visualblocks h1:before,
+.mce-visualblocks h2:before,
+.mce-visualblocks h3:before,
+.mce-visualblocks h4:before,
+.mce-visualblocks h5:before,
+.mce-visualblocks h6:before,
+.mce-visualblocks iframe:before,
+.mce-visualblocks li:before,
+.mce-visualblocks hr:before,
+.mce-visualblocks div:not(*[class^=mce-]):before,
+.mce-visualblocks p:before {
+  content: '';
+  float: right;
+  font-size: 12px;
+  padding: 2px;
+  line-height: 8px;
+  text-transform: uppercase;
+  color: orange;
+  font-family: tahoma;
+  font-weight: normal;
+  font-style: normal;
+  white-space: nowrap;
+  margin: -12px -18px 0 0;
+  letter-spacing: .15em;
+  background-color: #fff;
+  position: relative;
+  transform: scale(.65);
+}
+
+.mce-visualblocks *:hover {
+  outline: dotted 1px orange;
+}
+
+.mce-visualblocks pre:before {
+  content: 'formatted';
+}
+
+.mce-visualblocks address:before {
+  content: 'address';
+}
+
+.mce-visualblocks li:before {
+  content: 'list';
+  margin-right: -10px;
+}
+
+.mce-visualblocks p:before {
+  content: 'paragraph';
+}
+
+.mce-visualblocks h1:before {
+  content: 'heading 1';
+}
+
+.mce-visualblocks h2:before {
+  content: 'heading 2';
+}
+
+.mce-visualblocks h3:before {
+  content: 'heading 3';
+}
+
+.mce-visualblocks h4:before {
+  content: 'heading 4';
+}
+
+.mce-visualblocks h5:before {
+  content: 'heading 5';
+}
+
+.mce-visualblocks h6:before {
+  content: 'heading 6';
+}
+
+.mce-visualblocks iframe {
+  background: url(../img/iframe.gif) no-repeat 100% 100%;
+}
+
+.mce-visualblocks hr:before {
+  content: 'line';
+  margin: -6px -8px 0 0;
+  /*display: inline-block;
+  width: 17px;
+  height: 7px;
+  margin-bottom: 10px;*/
+}
+
+.mce-visualblocks blockquote:before {
+  content: 'blockquote';
+}
+
+/*.mce-visualblocks cite:before {
+  content: 'cite';
+}
+
+.mce-visualblocks code:before {
+  content: 'code';
+}
+
+.mce-visualblocks small:before {
+  content: 'small';
+}*/
+
+.mce-visualblocks div:not(*[class^=mce-]):before {
+  content: 'div';
+  margin-right: -10px;
+}
+
+.mce-visualblocks table td:before {
+  content: 'row';
+  margin: -12px -5px 0 0;
+}
+
+/* only IE */
+.mce-visualblocks br {
+  width: 100%;
+  background: url(../img/br.gif) no-repeat 100% 100%;
+}
+
+/*.mce-visualblocks br {
+  content: '';
+  display: block;
+}
+
+.mce-visualblocks br:before {
+  float: right;
+  position: relative;
+  z-index: 1;
+  content: '\A';
+  width: 10px;
+  height: 10px;
+  margin-top: -12px;
+  background: url(../img/br.gif) no-repeat 0 0;
+}*/
+
+/*.mce-visualblocks .section-column-resize li,
+.mce-visualblocks .section-column-2 li,
+.mce-visualblocks .section-column-3 li,
+.mce-visualblocks .section-column-4 li,
+.mce-visualblocks .section-column-5 li,
+.mce-visualblocks .section-column-6 li {
+  background-position: 0 1px;
+  background-repeat: no-repeat;
+  background-image: url(../img/column.gif);
+}
+*/
+.mce-visualblocks .alert-box,
+.mce-visualblocks .panel,
+.mce-visualblocks .section-first,
+.mce-visualblocks .section-second,
+.mce-visualblocks .section-third,
+.mce-visualblocks .section-fourth,
+.mce-visualblocks .section-fifth,
+.mce-visualblocks .section-six,
+.mce-visualblocks .section-seventh,
+.mce-visualblocks .section-eight {
+  overflow: visible;
+}
+
+/* TODO
+.mce-visualblocks div:before {
+  content: attr(class);
+  display: inline-block;
+  padding-left: 20px;
+  font-size: 10px;
+  color: #cd3a06;
+  background: url(../img/div.gif) no-repeat 0 0;
+}*/
