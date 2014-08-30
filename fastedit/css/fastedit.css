@@ -1,13 +1,4 @@
 div.mce-toolbar-fast {
-  /*position: absolute;
-  z-index: 1201;
-  display: none;
-  background-image: none;
-  padding: 0;
-  margin: -1px;
-  border: 0;
-  min-width: 72px;
-  line-height: 1em;*/
   background: #444;
   padding: 0;
   margin: 0;
@@ -25,62 +16,30 @@ div.mce-toolbar-fast .mce-text {
   display: none;
 }
 
-/*body .mce-toolbar-fast a {
-  padding: 4px;
-  margin: 0;
-  cursor: pointer;
-  border: dotted 1px rgba(255, 255, 255, 0.7);
-  outline: 0;
+.mce-i-fastlink:before {
+  content: '\e011';
   color: #fff;
-  text-align: left;
-  vertical-align: middle;
-  display: inline-block;
-  font-size: .9em;
-  background: rgba(0, 0, 0, 0.7);
-  background-repeat: no-repeat;
-  background-position: 0 0;
-  box-sizing: border-box;
 }
 
-body .mce-toolbar-fast a:hover {
-  background-color: rgba(0, 0, 0, 0.15);
+.mce-i-fastimage:before {
+  content: '\e014';
+  color: #fff;
 }
 
-body .mce-toolbar-fast .mce-toolbar-edit,
-body .mce-toolbar-fast .mce-toolbar-remove,
-body .mce-toolbar-fast .mce-toolbar-view {
-  width: 24px;
-  height: 24px;
-  text-indent: -999em;
-  overflow: hidden;
-  background-image: url(../img/icons.png);
+.mce-i-fastmedia:before {
+  content: '\e015';
+  color: #fff;
 }
 
-body .mce-toolbar-fast .mce-hide {
-  display: none;
+.mce-i-fasttable:before {
+  content: '\e01b';
+  color: #fff;
 }
 
-body .mce-toolbar-fast .mce-i-link {
-  background-position: -48px 0;
+.mce-ico.mce-i-fastshow {
+  background: url(../img/icons.png) no-repeat -16px 0;
 }
 
-body .mce-toolbar-fast .mce-i-media {
-  background-position: -96px 0;
+.mce-ico.mce-i-fastremove {
+  background: url(../img/icons.png) no-repeat 0 0;
 }
-
-body .mce-toolbar-fast .mce-i-table {
-  background-position: -120px 0;
-}
-
-body .mce-toolbar-fast .mce-toolbar-view {
-  background-position: -72px 0;
-}
-
-body .mce-toolbar-fast .mce-toolbar-remove {
-  background-position: -24px 0;
-}
-
-.mce-content-body table td,
-.mce-content-body table th {
-  position: relative;
-}*/

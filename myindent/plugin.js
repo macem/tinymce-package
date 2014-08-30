@@ -1,88 +1,125 @@
+'use strict';
+
 /**
- * plugin.js
+ * myindent tinymce plugin
  *
- * Copyright, Marcin Sołtysiuk
+ * @author Marcin Sołtysiuk
+ * @version 1.0b
+ * @copyright Copyright 2014, Marcin Sołtysiuk
  * Released under LGPL License.
+ *
+ * @requires tinymce
  */
 
-/*global tinymce:true */
-
 tinymce.PluginManager.add('myindent', function(editor) {
+  var dom = tinymce.dom,
+    _trim = tinymce.trim,
 
-  // toggle between Indent and Outdent command, depending on if SHIFT is pressed
-  tinymce.dom.DomQuery(editor.targetElm).on('keydown', function(e) {
+    // extend plugin settings
+    options = tinymce.extend({
+      'filter': 'p,div,blockquote,pre,h1,h2,h3,h4,h5,h6,h7,figure,',
+      'class' : 'indent-'
+    }, editor.settings.indent),
+
+    // tinymce indentation settings
+    config = editor.settings.indentation;
+
+  /**
+   * Event toggle between Indent and Outdent command,
+   * depending on if SHIFT is pressed
+   * @event keydown
+   */
+  dom.DomQuery(editor.targetElm).on('keydown', function(e) {
     if (e.keyCode === 9 && !e.altKey && !e.ctrlKey) {
-      if (e.shiftKey) {
-        editor.execCommand('Outdent');
-      }
-      else {
-        editor.execCommand('Indent');
-      }
-      return tinymce.dom.Event.cancel(e);
+      editor.execCommand(e.shiftKey ? 'Outdent' : 'Indent');
+      return dom.Event.cancel(e);
     }
   });
 
-  editor.on('PreInit', function (ed) {
-    var $$ = tinymce.dom.DomQuery,
-      i, node, style, classes, has,
-      padding = 'padding-left: ';
-      indentClasses = editor.settings.indent.classes;
-      paddingSetting = editor.settings.indentation.match(/(\d*)(\w*)/);
+  /**
+   * Init plugin in editor
+   */
+  editor.on('PreInit', function() {
+    var i, ruleStyle = 'padding-left: ',
+      styles, isStyle, currentStyle,
+      classes, isClass, currentClass,
+      // get current plugin configuration
+      prefixIndent = options.class,
+      // get tinymce indentation number value from configuration
+      paddingNumber = parseInt(config.match(/(\d*)(\w*)/)[1]),
+      // get tinymce indentation string value from configuration
+      paddingValue = config.match(/(\d*)(\w*)/)[2],
+      // reqexp to match indent class
+      reqExpClasses = new RegExp(prefixIndent + '(\\d)'),
+      // reqexp to match indent style
+      reqExpStyles = new RegExp(ruleStyle + '(\\d*)\\w*'),
 
-    // replace class to style
-    editor.parser.addNodeFilter(editor.settings.indent.selector, function(nodes, name) {
+      /**
+       * Method get indentation class
+       * @param {integer} value indentation value from style attribute
+       */
+      getIndentClass = function(value) {
+        return prefixIndent + (parseInt(value) / paddingNumber);
+      },
+      /**
+       * Method get indentation class
+       * @param {integer} value indentation value from style attribute
+       */
+      getIndentStyle = function(value) {
+        return ruleStyle + (parseInt(value) * paddingNumber) + paddingValue;
+      };
+
+    /**
+     * Filter node by selectors and replace indent class to style
+     * @param {string} selectors which will be parsed, multiple use comma
+     */
+    editor.parser.addNodeFilter(options.filter, function(nodes) {
       i = nodes.length;
 
       while (i--) {
-        node = nodes[i];
-        classes = node.attr('class');
+        classes = nodes[i].attr('class');
+        // ex. [indent-, 2]
+        isClass = classes && classes.match(reqExpClasses);
 
-        if (!classes) {
+        if (!isClass) {
           continue;
         }
 
-        has = classes.match(new RegExp(indentClasses + '(\\d)'));
-        if (!(has instanceof Array)) {
-          continue;
-        }
+        currentClass = [prefixIndent, isClass[1]].join('');
 
-        node.attr('style', 'padding-left: ' + (parseInt(has[1]) * parseInt(paddingSetting[1])) + paddingSetting[2]);
+        nodes[i].attr('style', [
+          getIndentStyle(isClass[1]),
+          nodes[i].attr('style') // existing styles
+        ].join(';'));
 
-        if (classes === indentClasses + has[1]) {
-          node.attr('class', null);
-        }
-        else {
-          node.attr('class', classes.replace(indentClasses + has[1], ''));
-        }
+        nodes[i].attr('class', _trim(classes.replace(currentClass, '')) || null);
       }
     });
 
-    // replace indent tags to classes
-    editor.serializer.addAttributeFilter('style', function(nodes, name) {
+    /**
+     * Filter node by attributes and replace indent style to class
+     * @param {string} attribute
+     */
+    editor.serializer.addAttributeFilter('style', function(nodes) {
       i = nodes.length;
 
       while (i--) {
-        node = nodes[i];
-        style = node.attr('style');
+        styles = nodes[i].attr('style');
+        // ex. [padding-left:, 3]
+        isStyle = styles && styles.match(reqExpStyles);
 
-        if (!style) {
+        if (!isStyle) {
           continue;
         }
 
-        has = style.match(new RegExp(padding + '(\\d*)\w*'));
+        currentStyle = [ruleStyle, isStyle[1], paddingValue, ';'].join('');
 
-        if (!(has instanceof Array)) {
-          continue;
-        }
+        nodes[i].attr('class', [
+          getIndentClass(isStyle[1]),
+          nodes[i].attr('class') // existing classes
+        ].join(' '));
 
-        node.attr('class', indentClasses + (parseInt(has[1]) / parseInt(paddingSetting[1])));
-
-        if (style === padding + has[1] + paddingSetting[2] + ';') {
-          node.attr('style', null);
-        }
-        else {
-          node.attr('style', style.replace(padding + has[1] + paddingSetting[2], '') + ';');
-        }
+        nodes[i].attr('style', _trim(styles.replace(currentStyle, '')) || null);
       }
     });
   });

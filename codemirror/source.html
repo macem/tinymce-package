@@ -188,7 +188,6 @@ function submit()
 		curLineHTML = doc.getLine(pos.line);
 
 	if (findDepth(curLineHTML, cc) !== 0) {
-    console.log('true');
 		// Cursor is inside a <tag>, don't set cursor:
 		//curLineHTML = curLineHTML.replace(cc, '');
 		//doc.setLine(pos.line, curLineHTML);
@@ -199,9 +198,10 @@ function submit()
   }
 
 	// Submit HTML to TinyMCE:
-	editor.setContent(code);
 	editor.isNotDirty = !isDirty;
 	if (isDirty) {
+    editor.undoManager.add(); // fix with dirty
+    editor.setContent(code);
 		editor.nodeChanged();
 	}
 

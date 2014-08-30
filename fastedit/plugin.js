@@ -1,27 +1,69 @@
-tinymce.PluginManager.add("fastedit", function (editor, url) {
+'use strict';
+
+/**
+ * fastedit tinymce plugin
+ *
+ * @author Marcin Sołtysiuk
+ * @version 1.0b
+ * @copyright Copyright 2014, Marcin Sołtysiuk
+ * Released under LGPL License.
+ *
+ * @requires tinymce
+ */
+
+tinymce.PluginManager.add('fastedit', function (editor, url) {
   var $$ = null;
 
   // init
 
   editor.on('PreInit', function () {
     var dom = editor.dom,
-      cssId = dom.uniqueId(),
       linkCss = dom.create('link', {
-        id: cssId,
+        id: dom.uniqueId(),
         rel: 'stylesheet',
         href: url + '/css/fastedit.css'
       }),
       HEIGHT = 25,
       body = editor.getBody(),
       offset,
-      config = {
+      // extend plugin setting
+      settings = tinymce.extend({
+        media: {
+          menu: [
+            editor.menuItems['fastmedia'],
+            editor.menuItems['fastimagelink'],
+            editor.menuItems['fastshow'],
+            editor.menuItems['fastremove']
+          ],
+          filter: function(node) {
+            return settings.media.menu;
+          },
+          removeCommand: 'mceRemoveNode',
+          is: function(node) {
+            return node.nodeName === 'IMG' && node.getAttribute('data-mce-object');
+          },
+          left: function(node) {
+            return $$(node).offset().left;
+          },
+          top: function(node) {
+            return $$(node).offset().top + (node.offsetHeight < 35 ? node.offsetHeight : 0);
+          }
+        },
         image: {
-          items: function(node) {
+          menu: [
+            editor.menuItems['fastimage'],
+            editor.menuItems['fastimagelink'],
+            editor.menuItems['fastshow'],
+            editor.menuItems['fastremove']
+          ],
+          filter: function(node) {
+            /*var items;
+
             if (node.getAttribute('data-mce-object')) {
-              var items = [editor.menuItems['fastmedia']];
+              items = [editor.menuItems['fastmedia']];
             }
             else {
-              var items = [editor.menuItems['fastimage']];
+              items = [editor.menuItems['fastimage']];
             }
 
             if (node.parentNode.tagName === 'A') {
@@ -29,13 +71,13 @@ tinymce.PluginManager.add("fastedit", function (editor, url) {
             }
 
             items.push(editor.menuItems['fastshow']);
-            items.push(editor.menuItems['fastremove']);
+            items.push(editor.menuItems['fastremove']);*/
 
-            return items;
+            return settings.image.menu;
           },
           removeCommand: 'mceRemoveNode',
           is: function(node) {
-            return node.nodeName === 'IMG' && !node.getAttribute('data-mce-placeholder');
+            return node.nodeName === 'IMG' && !node.getAttribute('data-mce-object')/*!node.getAttribute('data-mce-placeholder')*/;
           },
           left: function(node) {
             return $$(node).offset().left;
@@ -45,12 +87,13 @@ tinymce.PluginManager.add("fastedit", function (editor, url) {
           }
         },
         link: {
-          items: function(node) {
-            return [
-              editor.menuItems['fastlink'],
-              editor.menuItems['fastshow'],
-              editor.menuItems['fastremove']
-            ]
+          menu: [
+            editor.menuItems['fastlink'],
+            editor.menuItems['fastshow'],
+            editor.menuItems['fastremove']
+          ],
+          filter: function() {
+            return tinymce.extend(settings.link.menu);
           },
           removeCommand: 'mceRemoveNode',
           is: function(node) {
@@ -64,11 +107,11 @@ tinymce.PluginManager.add("fastedit", function (editor, url) {
           }
         },
         table: {
-          items: function(node) {
+          filter: function() {
             return [
               editor.menuItems['fasttable'],
               editor.menuItems['fastremove']
-            ]
+            ];
           },
           removeCommand: 'mceTableDelete',
           is: function(node) {
@@ -81,10 +124,10 @@ tinymce.PluginManager.add("fastedit", function (editor, url) {
             return $$(node).offset().top - HEIGHT;
           }
         }
-      },
+      }, editor.settings.fastedit),
       queue = [];
 
-    $$ = tinymce.dom.DomQuery,
+    $$ = tinymce.dom.DomQuery;
 
     offset = {
       top: $$(editor.getContainer()).offset().top,
@@ -110,50 +153,72 @@ tinymce.PluginManager.add("fastedit", function (editor, url) {
     // show menu
 
     dom.bind(body, 'mouseover', function(e) {
-      var node = e.target,
-        menu, items,
+      var node = e.target, menu,
         iframe = editor.iframeElement,
         top = iframe ? editor.getContentAreaContainer().offsetTop + offset.top - body.scrollTop : 0,
-        left = iframe ? editor.getContentAreaContainer().offsetLeft + offset.left : 0/*,
-        tinymeEl = node.className.indexOf('mce-')*/;
+        left = iframe ? editor.getContentAreaContainer().offsetLeft + offset.left : 0;
 
       // links
-      if (config.link.is(node)/* && tinymeEl === -1*/) {
+      if (settings.link.is(node)) {
         removeItems();
 
         menu = new tinymce.ui.Menu({
-          items: config.link.items(node),
+          items: settings.link.filter(node),
           context: 'contextmenu'
         })
         .addClass('toolbar-fast').renderTo();
 
         menu.show();
-        menu.moveTo(config.link.left(node) + left, config.link.top(node) + top);
+        menu.moveTo(settings.link.left(node) + left, settings.link.top(node) + top);
 
         menu.getEl().store = {
           node: node,
-          removeCommand: config.link.removeCommand
+          removeCommand: settings.link.removeCommand
         };
 
         queue.push(menu);
       }
-      // images and media
-      else if (config.image.is(node)/* && tinymeEl === -1*/) {
+      // media
+      else if (settings.media.is(node)) {
         removeItems();
 
         menu = new tinymce.ui.Menu({
-          items: config.image.items(node),
+          items: settings.media.filter(node),
           context: 'contextmenu'
         })
         .addClass('toolbar-fast').renderTo();
 
         menu.show();
-        menu.moveTo(config.image.left(node) + left, config.image.top(node) + top);
+        menu.moveTo(settings.media.left(node) + left, settings.media.top(node) + top);
 
         menu.getEl().store = {
           node: node,
-          removeCommand: config.image.removeCommand
+          removeCommand: settings.media.removeCommand
         };
+
+        menu.node = node;
+
+        queue.push(menu);
+      }
+      // images
+      else if (settings.image.is(node)) {
+        removeItems();
+
+        menu = new tinymce.ui.Menu({
+          items: settings.image.filter(node),
+          context: 'contextmenu'
+        })
+        .addClass('toolbar-fast').renderTo();
+
+        menu.show();
+        menu.moveTo(settings.image.left(node) + left, settings.image.top(node) + top);
+
+        menu.getEl().store = {
+          node: node,
+          removeCommand: settings.image.removeCommand
+        };
+
+        console.log('-', menu, menu.getEl());
 
         queue.push(menu);
       }
@@ -167,17 +232,17 @@ tinymce.PluginManager.add("fastedit", function (editor, url) {
       if ($table.length) {
 
         menu = new tinymce.ui.Menu({
-          items: config.table.items($table[0]),
+          items: settings.table.filter($table[0]),
           context: 'contextmenu'
         })
         .addClass('toolbar-fast').renderTo();
 
         menu.show();
-        menu.moveTo(config.table.left($table[0]) + left, config.table.top($table[0]) + top);
+        menu.moveTo(settings.table.left($table[0]) + left, settings.table.top($table[0]) + top);
 
         menu.getEl().store = {
           node: $table[0],
-          removeCommand: config.table.removeCommand
+          removeCommand: settings.table.removeCommand
         };
 
         queue.push(menu);
@@ -204,10 +269,31 @@ tinymce.PluginManager.add("fastedit", function (editor, url) {
 
   // menu items
 
-  editor.addMenuItem('fastlink', {
-    icon: true,
+/*editor.addMenuItem('column', {
+      text: 'Column',
+      context: 'table',
+      menu: [
+        {text: 'Insert column before', onclick: cmd('mceTableInsertColBefore'), onPostRender: postRenderCell},
+        {text: 'Insert column after', onclick: cmd('mceTableInsertColAfter'), onPostRender: postRenderCell},
+        {text: 'Delete column', onclick: cmd('mceTableDeleteCol'), onPostRender: postRenderCell}
+      ]
+    });  */
+
+  editor.addMenuItem('fastlabel', {
+    icon: false,
     tooltip: 'edit link',
-    image: url + '/img/link.png',
+    //image: url + '/img/link.png',
+    onclick: function(e) {
+      editElement(e.target, 'mceLink');
+    },
+    context: 'insert',
+    prependToContext: true
+  });
+
+  editor.addMenuItem('fastlink', {
+    icon: 'fastlink',
+    tooltip: 'edit link',
+    //image: url + '/img/link.png',
     onclick: function(e) {
       editElement(e.target, 'mceLink');
     },
@@ -216,9 +302,8 @@ tinymce.PluginManager.add("fastedit", function (editor, url) {
   });
 
   editor.addMenuItem('fastimage', {
-    icon: true,
+    icon: 'fastimage',
     tooltip: 'edit image',
-    image: url + '/img/image.png',
     onclick: function(e) {
       editElement(e.target, 'mceImage');
     },
@@ -227,9 +312,16 @@ tinymce.PluginManager.add("fastedit", function (editor, url) {
   });
 
   editor.addMenuItem('fastimagelink', {
-    icon: true,
+    icon: 'fastlink',
     tooltip: 'edit link',
-    image: url + '/img/link.png',
+    onPostRender: function(e) {
+      var menu = tinymce.DOM.get(this.rootControl._id);
+      //if (node.parentNode.tagName === 'A') {
+        //this.disabled(node.parentNode.tagName !== 'A');
+        //items.push(editor.menuItems['fastimagelink']);
+      //}
+      console.log('--', this, menu);
+    },
     onclick: function(e) {
       editElement(e.target.parentNode, 'mceLink');
     },
@@ -238,9 +330,7 @@ tinymce.PluginManager.add("fastedit", function (editor, url) {
   });
 
   editor.addMenuItem('fasttable', {
-    icon: true,
-    tooltip: 'edit table',
-    image: url + '/img/table.png',
+    icon: 'fasttable',
     onclick: function(e) {
       editElement(e.target, 'mceTableProps');
     },
@@ -249,9 +339,8 @@ tinymce.PluginManager.add("fastedit", function (editor, url) {
   });
 
   editor.addMenuItem('fastmedia', {
-    icon: true,
+    icon: 'fastmedia',
     tooltip: 'edit media',
-    image: url + '/img/media.png',
     onclick: function(e) {
       editElement(e.target, 'mceMedia');
     },
@@ -260,9 +349,8 @@ tinymce.PluginManager.add("fastedit", function (editor, url) {
   });
 
   editor.addMenuItem('fastshow', {
-    icon: true,
+    icon: 'fastshow',
     tooltip: 'in new window',
-    image: url + '/img/show.png',
     onclick: function(e) {
       var store = getStore(e.target);
 
@@ -278,9 +366,8 @@ tinymce.PluginManager.add("fastedit", function (editor, url) {
   });
 
   editor.addMenuItem('fastremove', {
-    icon: true,
+    icon: 'fastremove',
     tooltip: 'remove',
-    image: url + '/img/remove.png',
     onclick: function(e) {
       var store = getStore(e.target);
 
