@@ -17,24 +17,12 @@ tinymce.PluginManager.add('myindent', function(editor) {
 
     // extend plugin settings
     options = tinymce.extend({
-      'filter': 'p,div,blockquote,pre,h1,h2,h3,h4,h5,h6,h7,figure,',
+      'filter': 'p,div,cite,code,td,pre,h1,h2,h3,h4,h5,h6,h7,figure,section,article,aside',
       'class' : 'indent-'
     }, editor.settings.indent),
 
     // tinymce indentation settings
     config = editor.settings.indentation;
-
-  /**
-   * Event toggle between Indent and Outdent command,
-   * depending on if SHIFT is pressed
-   * @event keydown
-   */
-  dom.DomQuery(editor.targetElm).on('keydown', function(e) {
-    if (e.keyCode === 9 && !e.altKey && !e.ctrlKey) {
-      editor.execCommand(e.shiftKey ? 'Outdent' : 'Indent');
-      return dom.Event.cancel(e);
-    }
-  });
 
   /**
    * Init plugin in editor
@@ -68,6 +56,18 @@ tinymce.PluginManager.add('myindent', function(editor) {
       getIndentStyle = function(value) {
         return ruleStyle + (parseInt(value) * paddingNumber) + paddingValue;
       };
+
+    /**
+     * Event toggle between Indent and Outdent command,
+     * depending on if SHIFT is pressed
+     * @event keydown
+     */
+    dom.DomQuery(editor.getBody()).on('keydown', function(e) {
+      if (e.keyCode === 9 && !e.altKey && !e.ctrlKey) {
+        editor.execCommand(e.shiftKey ? 'Outdent' : 'Indent');
+        return dom.Event.cancel(e);
+      }
+    });
 
     /**
      * Filter node by selectors and replace indent class to style
